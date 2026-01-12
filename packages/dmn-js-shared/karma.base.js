@@ -1,5 +1,7 @@
 'use strict';
 
+var loc = require('path');
+
 var coverage = process.env.COVERAGE;
 
 var singleStart = process.env.SINGLE_START;
@@ -7,17 +9,20 @@ var singleStart = process.env.SINGLE_START;
 var mode = process.env.NODE_ENV || 'development';
 
 // use puppeteer provided Chrome for testing
-process.env.CHROME_BIN = require('puppeteer').executablePath();
+if (!process?.env?.CHROME_BIN) {
+  process.env.CHROME_BIN = require('puppeteer').executablePath();
+}
 
 // configures browsers to run test against
 // any of [ 'ChromeHeadless', 'Chrome', 'Firefox', 'IE' ]
-var browsers = (process.env.TEST_BROWSERS || 'ChromeHeadless').split(/\s*,\s*/g);
+var browsers = (process.env.TEST_BROWSERS || 'ChromeHeadless_Linux').split(/\s*,\s*/g);
 
 const testFile = coverage ? 'test/coverageBundle.js' : 'test/testBundle.js';
 
 module.exports = function(path) {
 
   return function(karma) {
+    const projectName = path.split(loc.sep).at(-1);
 
     const config = {
 
@@ -37,12 +42,31 @@ module.exports = function(path) {
         [testFile]: [ 'webpack', 'env' ]
       },
 
-      reporters: [ 'progress' ].concat(coverage ? 'coverage' : []),
+      reporters: [ 'progress', 'junit' ].concat(coverage ? 'coverage' : []),
+
+      junitReporter: {
+        outputDir: loc.join(__dirname, '../../test-results'),
+        outputFile: projectName + '-junit.xml',
+        useBrowserName: false,
+      },
+
+      plugins: [ 'karma-chrome-launcher', 'karma-coverage', 'karma-debug-launcher', 'karma-env-preprocessor', 'karma-junit-reporter', 'karma-webpack', 'karma-mocha', 'karma-sinon-chai' ],
 
       coverageReporter: {
         reporters: [
           { type: 'lcov', subdir: '.' },
         ]
+      },
+
+      customLaunchers: {
+        ChromeHeadless_Linux: {
+          base: 'ChromeHeadless',
+          flags: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+          ],
+          debug: true
+        }
       },
 
       browsers: browsers,

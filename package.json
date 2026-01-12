@@ -43,6 +43,7 @@
     "babel-plugin-inferno": "~5.0.0",
     "babel-plugin-istanbul": "^7.0.0",
     "chai": "^4.5.0",
+    "cmd-shim": "6.0.3",
     "cross-env": "^10.0.0",
     "del-cli": "^7.0.0",
     "eslint": "^9.14.0",
@@ -54,10 +55,11 @@
     "karma-env-preprocessor": "^0.1.1",
     "karma-firefox-launcher": "^2.1.2",
     "karma-ie-launcher": "^1.0.0",
+    "karma-junit-reporter": "^2.0.1",
     "karma-mocha": "^2.0.1",
     "karma-sinon-chai": "^2.0.2",
     "karma-webpack": "^5.0.0",
-    "lerna": "^9.0.0",
+    "lerna": "^9.0.3",
     "mocha": "^10.8.2",
     "mocha-test-container-support": "^0.2.0",
     "npm-run-all2": "^8.0.0",
@@ -67,5 +69,8 @@
     "stylelint": "^16.10.0",
     "stylelint-config-standard": "^39.0.0",
     "webpack": "^5.96.1"
+  },
+  "overrides": {
+    "cmd-shim": "$cmd-shim"
   }
 }

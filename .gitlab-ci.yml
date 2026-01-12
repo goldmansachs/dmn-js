@@ -1,0 +1,96 @@
+
+default:
+  image: node:latest
+
+stages:
+  - validate
+  - area_version
+  - build
+  - clean_area
+  - clm_scan
+  - etch_upload
+  - area_upload
+
+
+variables:
+  APP_NAME: 'dmnjs'
+  VERSION: $(echo ${CI_COMMIT_REF_NAME} | sed 's/^release-//')
+  NGINX_IMAGE: ${CI_REGISTRY_IMAGE}/dmn-js-nginx-alpine
+
+area_version:
+  stage: area_version
+  tags: [gsinet, kubernetes, linux, medium]
+  variables:
+    GIT_STRATEGY: none
+  image: ${CI_REGISTRY}/dx/containers/upload-to-area:current
+  script:
+  - area_version.sh area_version
+  artifacts:
+    paths:
+    - area_version
+
+build:
+  stage: build
+  tags:
+    - kubernetes
+    - linux
+    - default
+  image: registry.aws.site.gs.com:443/dx/js-eng/nodejs-container-images/ubi-rhel8-node22-chrome:current
+  script:
+    #install required job dependenices
+    - gs-yum-enable -e aws
+    - microdnf install -y zip
+    - cd ${CI_PROJECT_DIR}
+    - mkdir artifacts
+    - export M2_HOME=/gns/mw/build-tools/gs-maven-prod
+    - export JAVA_HOME=/gns/mw/java/64bit/oracle/hotspot/jdk-11-lts-11.0.10.b8
+    - ls -al
+    # build bundle for each environment
+    - . build-env.sh autoqa bundle.autoqa.js
+  artifacts:
+    paths:
+      - artifacts
+      - test-results
+    reports:
+      junit: test-results/*-junit.xml
+
+cloud_etch_upload_snapshot:
+  stage: etch_upload
+  tags:
+    - linux
+    - kubernetes
+    - default
+  image: registry.aws.site.gs.com:443/dx/ete/cloudetch-uploader:current
+  script:
+    - $CLOUD_ETCH_UPLOAD
+  
+cloud_etch_upload_final:
+  stage: etch_upload
+  tags:
+    - linux
+    - kubernetes
+    - default
+  image: registry.aws.site.gs.com:443/dx/ete/cloudetch-uploader:current
+  script:
+    - $CLOUD_ETCH_UPLOAD
+
+clm_scan:
+  stage: 'clm_scan'
+  tags: [standard]
+  image: registry.aws.site.gs.com:443/dx/sdlc-tools/aws-gitlab-clm-plugin/aws-gitlab-clm-plugin:current
+  script:
+      - /opt/clm/request-clmscan.sh $CI_PROJECT_DIR
+  variables:
+    CI_CD_LAYOUT_KEY: clm_scan
+    CI_CD_LAYOUT_NAME: clm_scan
+    CI_CD_LAYOUT_VERSION: 0.1.4
+  artifacts: {}
+  when: always
+  allow_failure: true
+
+area-upload:
+  stage: area_upload
+  tags: [kubernetes, linux, default]
+  image: registry.aws.site.gs.com:443/dx/containers/upload-to-area:current
+  script:
+    - upload.sh

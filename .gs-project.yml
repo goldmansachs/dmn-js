@@ -1,1 +1,16 @@
 productGuid: "product::966543"
+
+area:
+  producer: "com.gs.workflow.dmnjs"
+  package: "dmn-js"
+  artifactPaths:
+  - "**/artifacts/*.jar"
+  - "**/artifacts/*.pom"
+
+etch:
+  namespace: "DMNJS"
+  distributionList: "gs-workflow-low-code-dev@internal.email.gs.com"
+  testResultPaths:
+    - type: "JUNIT"
+      paths:
+        - "test-results/*-junit.xml"
