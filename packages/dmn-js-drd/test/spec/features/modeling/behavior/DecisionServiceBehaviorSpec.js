@@ -7,6 +7,8 @@ import CoreModule from 'src/core';
 import ModelingModule from 'src/features/modeling';
 
 import diagramXML from './decision-service-behavior.dmn';
+import overlaysModule from 'diagram-js/lib/features/overlays';
+import dataTypesModule from 'dmn-js-shared/lib/features/data-types';
 
 
 describe('DecisionServiceBehavior', function() {
@@ -14,7 +16,9 @@ describe('DecisionServiceBehavior', function() {
   beforeEach(bootstrapModeler(diagramXML, {
     modules: [
       CoreModule,
-      ModelingModule
+      ModelingModule,
+      overlaysModule,
+      dataTypesModule
     ]
   }));
 
